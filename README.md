@@ -14,7 +14,7 @@ La chiave da modificare è api_key con il proprio codice personale ottenuto dal 
 L'unica modalità di autenticazione attualmente implementata è "personal", quindi la chiave api_authentication_type non deve essere modifcata.
 
     "api_authentication_type" => 'personal',
-    "api_key" => "pk_10952744_AIL47YX36VX7KY95NY9SDABB6P8YYFJ8",
+    "api_key" => "pk_10952744_AIL47YX36VX7KY95N76DAW6P8YYFJ8",
 
 **Configurazione slack 
 
@@ -34,7 +34,7 @@ Nella stessa pagina è necessario aggiungere i permessi corretti nel "Bot Token 
 
 Il file di configurazione è: /config/slack.php
 
-   "oauth_token" => "xoxb-2304095330483-2350708963841-YtW138TiR3fApaZ1ArMWzOn5",
+   "oauth_token" => "xoxb-2304095330483-23507089334841-YtW138TiR3fApaZ1ArMWzOn5",
 
 Il bot inizialmente puo aggiungere messaggi solo nel canale in cui viene installato. Per poter inviare i messaggi in altri canali deve essere esplicitamente invitato come partecipante al canale. 
 
