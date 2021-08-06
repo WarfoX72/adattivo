@@ -44,3 +44,7 @@ L'archiettura dell'applicazione è abbastanza semplice:
 
 Il controller Adattivo contiene tutta la logica necessaria per la generazione dell'interfaccia e tutti i metodi utilizzati per le chiamate Ajax: le combo box dipendenti da una scelta precedente 
 sono caricate tramite una chiama Ajax. Le liste sono figlie degli spaces ed essi sono figli dei workspaces. Alla variazione di uno dei combo box padre i combo box figli vengono ricaricati con i dati corretti.
+Il caricamento avviente tramite chiamate Ajax, la gestione degli eventi è demandata ad una libreria custom (eventHandle) che utilizza un watcher sul DOM per aggangiare automaticamente gli eventi.
+L'evento viene definito come attributo dell'elemento html mentre la gestione dell'evento è demandato a codice JS che può essere sia una procedura che il metodo di un oggetto.
+
+E' definito all'interno di laraval un Handler per gestire le eccezioni custom che vengono lanciate in caso di problemi di configurazione e/o di comunicazione.
