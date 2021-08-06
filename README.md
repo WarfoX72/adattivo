@@ -25,12 +25,12 @@ Il token è recuperabile nel menù OAuth & Permissions, nello specifico è neces
 
 Nella stessa pagina è necessario aggiungere i permessi corretti nel "Bot Token Scopes", i permessi necessari sono:
 
--channels:read
--chat:write
--groups:read
--im:read
--incoming-webhook
--mpim:read
+* channels:read
+* chat:write
+* groups:read
+* im:read
+* incoming-webhook
+* mpim:read
 
 Il file di configurazione è: /config/slack.php
 
@@ -42,6 +42,5 @@ Il bot inizialmente puo aggiungere messaggi solo nel canale in cui viene install
 
 L'archiettura dell'applicazione è abbastanza semplice:
 
-Il controller Adattivo contiene tutta la logica necessaria per la generazione dell'interfaccia e tutti i metodi utilizzati per le chiamate Ajax: le combo box dipendenti da una scelta precedente sono caricate tramite una chiama Ajax. Le liste sono figlie degli spaces ed essi sono figli dei workspaces. Alla variazione di uno dei combo box padre i combo box figli vengono ricaricati con i dati corretti.
-
-
+Il controller Adattivo contiene tutta la logica necessaria per la generazione dell'interfaccia e tutti i metodi utilizzati per le chiamate Ajax: le combo box dipendenti da una scelta precedente 
+sono caricate tramite una chiama Ajax. Le liste sono figlie degli spaces ed essi sono figli dei workspaces. Alla variazione di uno dei combo box padre i combo box figli vengono ricaricati con i dati corretti.

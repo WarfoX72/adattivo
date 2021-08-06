@@ -7,14 +7,26 @@ function adattivo() {
     var reloadCombo = function (url, item, callback = null) {
         eventHandleIstance.getAjaxService().getJsonAsync(url, undefined, 'json', {
             success: function (resource) {
-                // fill combo
-                item.html('');
-                $.each(resource, function (key, space) {
-                    var option_item = "<option value=\"" + space.id + "\">" + space.name + "</option>";
-                    item.append(option_item);
-                });
-                if (callback != null) {
-                    callback();
+                if (resource.error == undefined) {
+                    // fill combo
+                    item.html('');
+                    $.each(resource, function (key, space) {
+                        var option_item = "<option value=\"" + space.id + "\">" + space.name + "</option>";
+                        item.append(option_item);
+                    });
+                    if (callback != null) {
+                        callback();
+                    }
+                } else {
+                    if (resource.error != undefined && resource.error == 1) {
+                        swal({
+                            title: "Ooops!",
+                            text: "I'm so sorry, a problem occourred loading remote datas.",
+                            icon: "error",
+                            button: "OK!",
+                        });
+
+                    }
                 }
             },
             method: 'get',
@@ -74,6 +86,7 @@ function adattivo() {
                             icon: "success",
                             button: "OK!",
                         });
+                        $('#createTask').trigger("reset");
                     }
                     if (resource.error != undefined && resource.error == 1) {
                         swal({

@@ -26,12 +26,15 @@ class AdattivoController extends Controller {
         // Load Workspaces from Clickup
         $clickup_controller = new clickup();
         $team_object = $clickup_controller->getTeam();
+        if (isset($team_object['err']) && !empty($team_object['err'])) {
+            throw new AdattivoException("Error in communication with Clickup with message : " . $team_object['err']);
+        }
         // Remove myself from team list
-        
+
         $slack_controller = new slack();
         $slack_channel_list = $slack_controller->getChannels();
-        if (isset($slack_channel_list['ok']) && $slack_channel_list['ok']==false){
-            throw new AdattivoException("Error in communication with slack with message : ".$slack_channel_list['error']);
+        if (isset($slack_channel_list['ok']) && $slack_channel_list['ok'] == false) {
+            throw new AdattivoException("Error in communication with slack with message : " . $slack_channel_list['error']);
         }
 
         return view('index', array("workspaces" => $team_object, "channels" => $slack_channel_list));
@@ -72,37 +75,46 @@ class AdattivoController extends Controller {
         $clickup_controller = new clickup();
         // First take folderless
         $folderless_list_object = $clickup_controller->getFolderLessList($spaceid);
-        $answer = array();
-        if (count($folderless_list_object['lists']) > 0) {
-            foreach ($folderless_list_object['lists'] as $list) {
-                $answer[] = [
-                    "id" => $list['id'],
-                    "name" => $list['name']
-                ];
-            }
-        }
-        // Get folded lists
-        $folder_object = $clickup_controller->getFolder($spaceid);
-        if (count($folder_object['folders']) > 0) {
-            foreach ($folder_object['folders'] as $folder) {
+        if (!isset($folderless_list_object['err'])) {
 
-                // Get list
-                $folderid = $folder['id'];
-                $folder_name = $folder['name'];
-                $folded_list = $clickup_controller->getList($folderid);
-                if (count($folded_list['lists']) > 0) {
-                    foreach ($folded_list['lists'] as $list) {
-                        $answer[] = [
-                            "id" => $list['id'],
-                            "name" => $folder_name . "/" . $list['name']
-                        ];
-                    }
+            $answer = array();
+            if (count($folderless_list_object['lists']) > 0) {
+                foreach ($folderless_list_object['lists'] as $list) {
+                    $answer[] = [
+                        "id" => $list['id'],
+                        "name" => $list['name']
+                    ];
                 }
             }
-        }
-        $columns = array_column($answer, 'name');
-        array_multisort($columns, SORT_ASC, $answer);
+            // Get folded lists
+            $folder_object = $clickup_controller->getFolder($spaceid);
 
+            if (!isset($folderless_list_object['err'])) {
+                if (count($folder_object['folders']) > 0) {
+                    foreach ($folder_object['folders'] as $folder) {
+
+                        // Get list
+                        $folderid = $folder['id'];
+                        $folder_name = $folder['name'];
+                        $folded_list = $clickup_controller->getList($folderid);
+                        if (count($folded_list['lists']) > 0) {
+                            foreach ($folded_list['lists'] as $list) {
+                                $answer[] = [
+                                    "id" => $list['id'],
+                                    "name" => $folder_name . "/" . $list['name']
+                                ];
+                            }
+                        }
+                    }
+                }
+                $columns = array_column($answer, 'name');
+                array_multisort($columns, SORT_ASC, $answer);
+            } else {
+                $answer['error'] = 1;
+            }
+        } else {
+            $answer['error'] = 1;
+        }
         return response()->json($answer);
     }
 
@@ -112,15 +124,19 @@ class AdattivoController extends Controller {
     public function loadFolder(Request $request, int $spaceid) {
         $clickup_controller = new clickup();
         $folder_object = $clickup_controller->getFolder($spaceid);
-        // Filter only usefull information
-        $answer = array();
-        if (isset($space_object['folder'])) {
-            foreach ($folder_object['folder'] as $space) {
-                $answer[] = [
-                    "id" => $space['id'],
-                    "name" => $space['name']
-                ];
+        if (!isset($folder_object['err'])) {
+            // Filter only usefull information
+            $answer = array();
+            if (isset($space_object['folder'])) {
+                foreach ($folder_object['folder'] as $space) {
+                    $answer[] = [
+                        "id" => $space['id'],
+                        "name" => $space['name']
+                    ];
+                }
             }
+        } else {
+            $answer['error'] = 1;
         }
         return response()->json($answer);
     }
@@ -133,6 +149,7 @@ class AdattivoController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function create() {
+        
     }
 
     /**
@@ -171,32 +188,39 @@ class AdattivoController extends Controller {
         //Fix data Types
         $new_task_data = (array) json_decode(json_encode($new_task_data, JSON_NUMERIC_CHECK));
         $clickup_task = $clickup_controller->createTask($list_id, $new_task_data);
-        $url = $clickup_task['url'];
+        if (!isset($clickup_task['err'])) {
 
-        $value_list = [
-            "{{task_title}}" => $request->input('tasktitle'),
-            "{{task_description}}" => $request->input('taskdescr'),
-            "{{task_url}}" => $url];
+            $url = $clickup_task['url'];
+            $value_list = [
+                "{{task_title}}" => $request->input('tasktitle'),
+                "{{task_description}}" => $request->input('taskdescr'),
+                "{{task_url}}" => $url];
 
-        $find = array_keys($value_list);
-        $replace = array_values($value_list);
-        $message = str_ireplace($find, $replace, self::SLACK_MESSAGE);
+            $find = array_keys($value_list);
+            $replace = array_values($value_list);
+            $message = str_ireplace($find, $replace, self::SLACK_MESSAGE);
 
-        $slack_controller = new slack();
-        $slack_response = $slack_controller->createMessage($request->input('channel'), $message);
-        if ($slack_response['ok'] !== false) {
-            $answer = [
-                "ok" => 1
-            ];
-        } else {
-            if (isset($slack_response['error']) && !empty($slack_response['error'])) {
+            $slack_controller = new slack();
+            $slack_response = $slack_controller->createMessage($request->input('channel'), $message);
+            if ($slack_response['ok'] !== false) {
                 $answer = [
-                    "error" => 1,
-                    "message" => $slack_response['error']
+                    "ok" => 1
                 ];
+            } else {
+                if (isset($slack_response['error']) && !empty($slack_response['error'])) {
+                    $answer = [
+                        "error" => 1,
+                        "message" => $slack_response['error']
+                    ];
+                }
             }
+        } else {
+            $answer = [
+                "error" => 1,
+                "message" => $clickup_task['err']
+            ];
         }
-        return json_encode($answer);
+        return response()->json($answer);
     }
 
     /**

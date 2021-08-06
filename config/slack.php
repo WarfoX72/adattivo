@@ -8,7 +8,7 @@
  * 
  */
 return [
-    "oauth_token" => "xoxb-2304095330483-2350708963841-VLki9yxD7cstF3arI8zBSv9v",
+    "oauth_token" => "xoxb-2304095330483-2350708963841-vY9MdNxzoBcJCjCbLKaEtsCh",
     "api_endpoint" => "https://slack.com/api/",
     "api_functions" => [
         "getChannels" => (object)
